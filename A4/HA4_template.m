@@ -1,0 +1,283 @@
+clc
+close all
+clear
+
+%% Q1a
+% represent the polyhedron in V- and H-representation and plot the two
+% versions separately
+A = [0  1; 
+    -1  0;
+    -1 -1;
+     1  1];
+b = [0 0 1 1]';
+% H-rep
+P_H = Polyhedron(A,b);
+% V_rep
+V = [0 0; 0 -1 ; 1 0];
+P_V = Polyhedron('V',V);
+
+P_H_1a = P_H;
+P_V_1a = P_V;
+
+subplot(1,2,1)
+plot(P_V)
+title('V-representation without the tail')
+subplot(1,2,2)
+plot(P_H)
+title('H-representation')
+
+
+%% Q1b
+% perform some sets operations
+A_1 = [0  1;
+       1  0;
+       0 -1;
+      -1  0];
+b_1 = 2*ones(4,1);
+
+A_2 = [-1 -1;
+        1  1;
+        1 -1;
+       -1  1];
+b_2 = ones(4,1);
+
+P = Polyhedron(A_1,b_1);
+Q = Polyhedron(A_2,b_2);
+
+P_1b = P;
+
+Q_1b = Q;
+
+
+Mink_sum_1b = P + Q;
+
+Pontr_diff_1b = P - Q;
+
+PminusQplusQ_1b = (P - Q) + Q;
+
+PplusQminusQ_1b = (P + Q) - Q;
+
+QminusPplusP_1b = (Q - P) + P;
+
+QplusPminusP_1b = (Q + P) - P;
+
+set(0,'defaulttextinterpreter','latex');
+subplot(4,2,1)
+P_1b.plot
+title('$\mathcal{P}$')
+xlabel('$x_1$')
+ylabel('$x_2$')
+axis([-3 3 -3 3])
+
+subplot(4,2,2)
+Q_1b.plot
+title('$\mathcal{Q}$')
+xlabel('$x_1$')
+ylabel('$x_2$')
+axis([-3 3 -3 3])
+
+subplot(4,2,3)
+Mink_sum_1b.plot
+title('$\mathcal{P}\oplus\mathcal{Q}$')
+xlabel('$x_1$')
+ylabel('$x_2$')
+axis([-3 3 -3 3])
+
+subplot(4,2,4)
+Pontr_diff_1b.plot
+title('$\mathcal{P}\ominus \mathcal{Q}$')
+xlabel('$x_1$')
+ylabel('$x_2$')
+axis([-3 3 -3 3])
+
+subplot(4,2,5)
+PminusQplusQ_1b.plot
+title('$(\mathcal{P}\ominus\mathcal{Q})\oplus\mathcal{Q}$','FontSize',	12)
+xlabel('$x_1$')
+ylabel('$x_2$')
+axis([-3 3 -3 3])
+
+subplot(4,2,6)
+PplusQminusQ_1b.plot
+title('$(\mathcal{P}\oplus\mathcal{Q})\ominus\mathcal{Q}$','FontSize',	12)
+xlabel('$x_1$')
+ylabel('$x_2$')
+axis([-3 3 -3 3])
+
+subplot(4,2,7)
+QminusPplusP_1b.plot
+title('$(\mathcal{Q}\ominus\mathcal{P})\oplus\mathcal{P}$','FontSize',	12)
+xlabel('$x_1$')
+ylabel('$x_2$')
+axis([-3 3 -3 3])
+
+subplot(4,2,8)
+QplusPminusP_1b.plot
+title('$(\mathcal{Q}\oplus\mathcal{P})\ominus\mathcal{P}$','FontSize',	12)
+xlabel('$x_1$')
+ylabel('$x_2$')
+axis([-3 3 -3 3])
+
+
+%% Q2a
+% show that the set S is positively invariant for the system and plot it
+A = [0.8 0.4;
+    -0.4 0.8];
+A_in = [ 1  0;
+         0  1;
+        -1  0;
+         0 -1;
+         1  1;
+         1 -1;
+        -1  1;
+        -1 -1];
+b_in =[ones(4,1);1.5*ones(4,1)];
+S = Polyhedron('A',A_in,'b',b_in);
+S_2a = S;
+
+R1_S = Polyhedron('A',A_in*A^-1,'b',b_in);
+set(0,'defaulttextinterpreter','latex');
+hold on
+plot(R1_S,'color','r')
+S.plot('alpha',0.3,'color','b')
+text()
+legend({'$$ R_{1}(\mathcal{S}) $$','$$ \mathcal{S}$$'},Interpreter="latex")
+
+%% Q2b
+% calculate the one-step reachable set from S and plot it together with S
+A = [0.8 0.4;
+    -0.4 0.8];
+B = [0;1];
+
+U = Polyhedron('lb',-1,'ub',1);
+AoS = S.affineMap(A);
+BoU = U.affineMap(B);
+Reach_S = AoS.plus(BoU);
+
+reach_set_S_2b = Reach_S;
+
+Reach_S.plot(alpha=0.5)
+hold on 
+S.plot
+legend({'$\mathcal{S}$','$Reach(\mathcal{S})$'},Interpreter="latex",FontSize=14)
+
+%% Q2c
+% calculate the one-step precursor set of S and plot it together with S
+% for check purpose 
+% sys=LTISystem('A',A,'B',B);
+% pre_reach =sys.reachableSet('X',S,'U',U,'direction','backward');
+
+A_pre = [A_in*A A_in*B;
+         zeros(2) [1;-1]];
+b_pre = [b_in;[1;1]];
+
+pre_reach = projection(Polyhedron('A',A_pre,'b',b_pre),[1,2]);
+%pre_reach = pre_reach.intersect(S);
+
+pre_set_S_2c = pre_reach; % project tau into 1st and 2nd dimensions
+
+plot(pre_reach,'alpha',0.5,'color','b')
+hold on
+plot(S)
+legend({'$pre(\mathcal{S})$','$ \mathcal{S}$'},Interpreter="latex",FontSize=18)
+%% Q3a
+% find shortest prediction horizon such that the RH controller is feasible
+A = [ 0.9 0.4;
+     -0.4 0.9];
+B = [0 ; 1];
+P_f = 0 ; Q = eye(2); R = 1; x0 = [2;0]; n = 2; x_max = 3; u_max = 0.1;
+Xf=Polyhedron([0 0]);
+
+sys = LTISystem('A',A,'B',B);
+sys.u.min = -0.1;
+sys.u.max = 0.1;
+sys.x.min = [-3 ;-3];
+sys.x.max = [3  ; 3];
+X = Polyhedron('lb',sys.x.min,'ub',sys.x.max);
+U = Polyhedron('lb',sys.u.min,'ub',sys.u.max);
+sys.x.penalty = QuadFunction(Q);
+sys.u.penalty = QuadFunction(R);
+sys.x.with('terminalSet');
+sys.x.terminalSet=Xf;
+
+N=25;
+max_iter = 100;
+iter = 1;
+while iter <= max_iter
+mpc_Cont1 = MPCController(sys,N);
+[~,feasible,~] = mpc_Cont1.evaluate(x0);
+    if feasible
+        break;
+    else
+        N = N+1;
+    end
+    iter = iter+1;
+end
+
+
+N_3a = N;
+
+XN_cont1 = sys.reachableSet('X',Xf,'U',U,'direction','backward','N',26); 
+closedloop_1 = ClosedLoop(mpc_Cont1,sys);
+data_1 = closedloop_1.simulate(x0,100);
+
+
+% plots
+
+hold on
+plot(data_1.U,'.-','LineWidth',2)
+plot(data_1.X(1,:),'.-','LineWidth',2)
+plot(data_1.X(2,:),'.-','LineWidth',2)
+axis([1 36 -3 3])
+legend({'Control input u',' State $x_1$','State $x_2$'},Interpreter="latex")
+grid on
+title('Simulation with N=26 and $X_f =[0 \:\: 0] $',Interpreter='latex')
+
+%% Q3b
+% find out if the RH controller is persistently feasible all the way to the
+% origin
+maxContrInvSet_3b = sys.invariantSet();
+sys.x.terminalSet = maxContrInvSet_3b;
+
+N=2;
+mpc_cont2 = MPCController(sys,N);
+[~,feasible,openloop] = mpc_cont2.evaluate(x0);
+
+closedloop_2 = ClosedLoop(mpc_cont2,sys);
+data_2 = closedloop_2.simulate(x0,40);
+
+XN_cont2 = sys.reachableSet('X',sys.x.terminalSet,'U',U,'direction','backward','N',2); 
+
+% Plots
+hold on
+plot(data_2.U,'.-','LineWidth',2)
+plot(data_2.X(1,:),'.-','LineWidth',2)
+plot(data_2.X(2,:),'.-','LineWidth',2)
+axis([0 36 -3 3])
+legend({'Control input u',' State $x_1$','State $x_2$'},Interpreter="latex")
+grid on
+title('Simulation with N=2 and $X_f =\mathcal{C}_{\infty} $',Interpreter='latex')
+%% Q3c
+% plot the set of feasible initial states for the two controllers
+% previously designed and discuss about the size of the problems
+
+X0_1_3c = XN_cont1;
+X0_2_3c = XN_cont2;
+
+hold on
+plot(XN_cont2,'alpha',0.4,'color','b')
+plot(maxContrInvSet_3b,'alpha',0.3,'color','g')
+plot(XN_cont1,'alpha',0.7)
+plot(0, 0,'o',MarkerEdgeColor='k',MarkerFaceColor='white',MarkerSize=8)
+plot(2, 0,'o',MarkerEdgeColor='g',MarkerFaceColor='white',MarkerSize=8)
+plot(data_2.X(1,:),data_2.X(2,:),'.-','LineWidth',2,Color='K')
+legend({'$ \mathcal{X}_{N_2}$','$\mathcal{X}_{f_2}=\mathcal{C}_{\infty}$','$\mathcal{X}_{N_1}$','$\mathcal{X}_{f_1}$','$x_0$','States trajectory'},Interpreter="latex")
+title('Set of feasible inital states $\mathcal{X}_{N_1}$ and $\mathcal{X}_{N_2}$ and terminal sets $\mathcal{X}_{f_1}$ and $\mathcal{X}_{f_2}$ along with state trajectory',Interpreter='latex')
+
+figure
+hold on
+plot(XN_cont2,'alpha',0.4,'color','b')
+plot(XN_cont2.intersect(X),'alpha',0.2,'Color','g')
+plot(XN_cont1,'alpha',0.7)
+legend({'$ \mathcal{X}_{N_2}$','Feasible $\mathcal{X}_{N_2}=\mathcal{X}_{N_2}\cap \mathcal{X}$','$\mathcal{X}_{N_1}$'},Interpreter="latex")
+title('Set of feasible inital states $\mathcal{X}_{N_1}$ and $\mathcal{X}_{N_2}$')
